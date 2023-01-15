@@ -10,6 +10,12 @@ const bot = new TelegramApi(token, {polling: true})
 
 const chats = {}
 
+function getRandomIntInclusive() {
+    const min = 1;
+    const max = 49;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 const startGame = async (chatId) => {
     await bot.sendMessage(chatId, 'Я загадаю число от 0 до 9, а ты должен угадать!');
     const randomNumber = Math.floor(Math.random() * 10);
@@ -40,6 +46,7 @@ const start = () => {
 
     bot.setMyCommands([
         {command: '/start', description: 'Начальное приветствие'},
+        {command: '/gachitime', description: 'TIME TO GACHI'},
         {command: '/info', description: 'Получить информацию о пользователе'},
         {command: '/game', description: 'Начать игру'},
         {command: '/compliment', description: 'Получить комплимент'}
@@ -50,8 +57,12 @@ const start = () => {
         const chatId = message.chat.id;
 
         if (text === '/start') {
-            await bot.sendSticker(chatId,'https://tlgrm.eu/_/stickers/1b5/0ab/1b50abf8-8451-40ca-be37-ffd7aa74ec4d/1.webp')
+            await bot.sendSticker(chatId,`https://tlgrm.eu/_/stickers/1b5/0ab/1b50abf8-8451-40ca-be37-ffd7aa74ec4d/1.webp`)
             return bot.sendMessage(chatId, `Привет ${message.from.first_name}!`)
+        }
+        if (text === '/gachitime') {
+            await bot.sendSticker(chatId,`https://tlgrm.eu/_/stickers/1b5/0ab/1b50abf8-8451-40ca-be37-ffd7aa74ec4d/${getRandomIntInclusive()}.webp`)
+            return bot.sendMessage(chatId, `GACHITIME!`)
         }
         if (text === '/info') {
             return bot.sendMessage(chatId, `Тебя зовут ${message.from.first_name} ${message.from.last_name}`)
