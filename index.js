@@ -1,5 +1,7 @@
 const TelegramApi = require('node-telegram-bot-api');
 
+require('cross-fetch/polyfill');
+
 const {gameOptions, againOptions} = require('./options')
 
 const token = "5859984210:AAHyV5cJRbMfRj4OJJpPZodbUfZhcQ1tIVw";
@@ -10,16 +12,37 @@ const chats = {}
 
 const startGame = async (chatId) => {
     await bot.sendMessage(chatId, 'Я загадаю число от 0 до 9, а ты должен угадать!');
-    const randomNumber = String(Math.floor(Math.random() * 10));
+    const randomNumber = Math.floor(Math.random() * 10);
     chats[chatId] = randomNumber;
     await bot.sendMessage(chatId, 'Отгадывай :3', gameOptions)
 }
 
+const getCompliment = async () => {
+    try {
+        const res = await fetch('https://complimentr.com/api');
+
+        if (res.status >= 400) {
+            throw new Error("Bad response from server");
+        }
+
+        const compl = await res.json();
+        return JSON.stringify(compl.compliment).slice(1, -1);
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+
+
+
 const start = () => {
+
     bot.setMyCommands([
         {command: '/start', description: 'Начальное приветствие'},
         {command: '/info', description: 'Получить информацию о пользователе'},
-        {command: '/game', description: 'Начать игру'}
+        {command: '/game', description: 'Начать игру'},
+        {command: '/compliment', description: 'Получить комплимент'}
     ])
 
     bot.on('message', async message => {
@@ -36,6 +59,10 @@ const start = () => {
         if (text === '/game') {
             return startGame(chatId)
         }
+        if (text === '/compliment') {
+            const compl = await getCompliment()
+            return bot.sendMessage(chatId, `${compl}`)
+        }
         return bot.sendMessage(chatId, 'Я тебя не понимаю -_____-')
     })
 
@@ -45,11 +72,12 @@ const start = () => {
         if (data === '/again') {
             return startGame(chatId)
         }
-        if (data === chats[chatId]) {
+        if (data == chats[chatId]) {
             return await bot.sendMessage(chatId, `Поздравляю, ты отгадал цифру ${chats[chatId]}!`, againOptions)
         } else {
             return await bot.sendMessage(chatId, `К твоему сожалению я загадал ${chats[chatId]}!`, againOptions)}
     })
 }
+
 
 start()
